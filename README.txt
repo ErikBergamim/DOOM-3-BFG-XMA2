@@ -1,3 +1,24 @@
+-------------------------------------------------------------------------------------------------
+DOOM 3 BFG - Post-Compilation Setup
+
+After compiling DOOM 3 BFG, follow these steps to set up audio processing:
+
+1. XMA2 Encoder Setup
+Place xma2encode.exe at:
+C:\Program Files (x86)\Microsoft Xbox 360 SDK\bin\win32\xma2encode.exe
+
+2. Configure default.cfg
+Add these commands to default.cfg:
+set fs_buildgame 1
+set fs_buildresources 1
+
+3. Audio Processing
+Place .wav files in base/sound/
+Run the game with the configuration enabled
+Generated .idxma files will appear in the generated/ folder
+
+-------------------------------------------------------------------------------------------------
+
 Doom 3 BFG Edition GPL Source Code
 ==================================
 
