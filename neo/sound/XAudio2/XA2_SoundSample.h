@@ -31,99 +31,95 @@ If you have questions concerning this license or the applicable additional terms
 /*
 ================================================
 idSoundSample_XAudio2
+
+This is the actual implementation class.
+The base idSoundSample is defined elsewhere.
 ================================================
 */
-class idSampleInfo;
 class idSoundSample_XAudio2 {
 public:
-					idSoundSample_XAudio2();
+                    idSoundSample_XAudio2();
+    virtual			~idSoundSample_XAudio2();
 
-	// Loads and initializes the resource based on the name.
-	virtual void	 LoadResource();
+    // Loads and initializes the resource based on the name.
+    virtual void	 LoadResource();
 
-	void			SetName( const char * n ) { name = n; }
-	const char *	GetName() const { return name; }
-	ID_TIME_T		GetTimestamp() const { return timestamp; }
+    void			SetName( const char * n ) { name = n; }
+    const char *	GetName() const { return name; }
+    ID_TIME_T		GetTimestamp() const { return timestamp; }
 
-	// turns it into a beep
-	void			MakeDefault();
+    // turns it into a beep
+    void			MakeDefault();
 
-	// frees all data
-	void			FreeData();
+    // frees all data
+    void			FreeData();
 
-	int				LengthInMsec() const { return SamplesToMsec( NumSamples(), SampleRate() ); }
-	int				SampleRate() const { return format.basic.samplesPerSec; }
-	int				NumSamples() const { return playLength; }
-	int				NumChannels() const { return format.basic.numChannels; }
-	int				BufferSize() const { return totalBufferSize; }
+    int				LengthInMsec() const { return SamplesToMsec( NumSamples(), SampleRate() ); }
+    int				SampleRate() const { return format.basic.samplesPerSec; }
+    int				NumSamples() const { return playLength; }
+    int				NumChannels() const { return format.basic.numChannels; }
+    int				BufferSize() const { return totalBufferSize; }
 
-	bool			IsCompressed() const { return ( format.basic.formatTag != idWaveFile::FORMAT_PCM ); }
+    bool			IsCompressed() const { return ( format.basic.formatTag != idWaveFile::FORMAT_PCM ); }
 
-	bool			IsDefault() const { return timestamp == FILE_NOT_FOUND_TIMESTAMP; }
-	bool			IsLoaded() const { return loaded; }
+    bool			IsDefault() const { return timestamp == FILE_NOT_FOUND_TIMESTAMP; }
+    bool			IsLoaded() const { return loaded; }
 
-	void			SetNeverPurge() { neverPurge = true; }
-	bool			GetNeverPurge() const { return neverPurge; }
+    void			SetNeverPurge() { neverPurge = true; }
+    bool			GetNeverPurge() const { return neverPurge; }
 
-	void			SetLevelLoadReferenced() { levelLoadReferenced = true; }
-	void			ResetLevelLoadReferenced() { levelLoadReferenced = false; }
-	bool			GetLevelLoadReferenced() const { return levelLoadReferenced; }
+    void			SetLevelLoadReferenced() { levelLoadReferenced = true; }
+    void			ResetLevelLoadReferenced() { levelLoadReferenced = false; }
+    bool			GetLevelLoadReferenced() const { return levelLoadReferenced; }
 
-	int				GetLastPlayedTime() const { return lastPlayedTime; }
-	void			SetLastPlayedTime( int t ) { lastPlayedTime = t; }
+    int				GetLastPlayedTime() const { return lastPlayedTime; }
+    void			SetLastPlayedTime( int t ) { lastPlayedTime = t; }
 
-	float			GetAmplitude( int timeMS ) const;
+    float			GetAmplitude( int timeMS ) const;
+
+    // Add these new member functions
+    bool                    SavePCMAsWav( const idStr& filename );
+    bool                    LoadXMAFile( const idStr& filename );
+    bool                    ConvertPCMToXMA2( const idStr& originalFilename );
+    void                    ConvertToXMA2Format( const idStr& originalFilename );
+
+    // XAudio2 specific members
+    struct sampleBuffer_t {
+        void * buffer;
+        int bufferSize;
+        int numSamples;
+    };
+
+    idList<sampleBuffer_t, TAG_AUDIO> buffers;
+    idWaveFile::waveFmt_t	format;
 
 protected:
-	friend class idSoundHardware_XAudio2;
-	friend class idSoundVoice_XAudio2;
+    friend class idSoundHardware_XAudio2;
+    friend class idSoundVoice_XAudio2;
 
-					~idSoundSample_XAudio2();
+    bool			LoadWav( const idStr & filename );  // Keep this protected
+    bool			LoadAmplitude( const idStr & name );
+    void			WriteAllSamples( const idStr &sampleName );
+    bool			LoadGeneratedSample( const idStr &name );
+    void			WriteGeneratedSample( idFile *fileOut );
 
-	bool			LoadWav( const idStr & name );
-	bool			LoadAmplitude( const idStr & name );
-	void			WriteAllSamples( const idStr &sampleName );
-	bool			LoadGeneratedSample( const idStr &name );
-	void			WriteGeneratedSample( idFile *fileOut );
+    idStr			name;
 
-	struct sampleBuffer_t {
-		void * buffer;
-		int bufferSize;
-		int numSamples;
-	};
+    ID_TIME_T		timestamp;
+    bool			loaded;
 
-	idStr			name;
+    bool			neverPurge;
+    bool			levelLoadReferenced;
+    bool			usesMapHeap;
 
-	ID_TIME_T		timestamp;
-	bool			loaded;
+    uint32			lastPlayedTime;
 
-	bool			neverPurge;
-	bool			levelLoadReferenced;
-	bool			usesMapHeap;
+    int				totalBufferSize;	// total size of all the buffers
 
-	uint32			lastPlayedTime;
+    int				playBegin;
+    int				playLength;
 
-	int				totalBufferSize;	// total size of all the buffers
-	idList<sampleBuffer_t, TAG_AUDIO> buffers;
-
-	int				playBegin;
-	int				playLength;
-
-	idWaveFile::waveFmt_t	format;
-
-	idList<byte, TAG_AMPLITUDE> amplitude;
-};
-
-/*
-================================================
-idSoundSample
-
-This reverse-inheritance purportedly makes working on
-multiple platforms easier.
-================================================
-*/
-class idSoundSample : public idSoundSample_XAudio2 {
-public:
+    idList<byte, TAG_AMPLITUDE> amplitude;
 };
 
 #endif
